@@ -315,3 +315,38 @@ input:focus { border-color: var(--accent); }
   .result-actions button { width: 100%; }
   .character-frame { width: 92vw; height: 60vh; }
 }
+
+.dialog-intro {
+  margin: -6px 0 2px;
+  color: var(--muted);
+  line-height: 1.5;
+  font-size: .92rem;
+}
+.delivery-result {
+  position: relative;
+  padding: 30px;
+  text-align: center;
+}
+.delivery-result h2 { margin: 4px 0 10px; font-size: 1.8rem; }
+.delivery-result p { color: var(--muted); line-height: 1.5; }
+.qr-code {
+  display: block;
+  width: min(280px, 78vw);
+  aspect-ratio: 1;
+  margin: 18px auto 10px;
+  padding: 10px;
+  border-radius: 18px;
+  background: #fff;
+}
+.expiration-message { margin: 8px 0 18px; font-size: .82rem; }
+.delivery-actions { display: grid; gap: 10px; }
+.link-button { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.text-button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  text-decoration: underline;
+  padding: 8px;
+  cursor: pointer;
+}
+[hidden] { display: none !important; }

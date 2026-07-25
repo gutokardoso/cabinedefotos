@@ -62,7 +62,7 @@
       </div>
 
       <div class="result-actions">
-        <button class="primary-button" id="shareEmailButton">COMPARTILHAR POR E-MAIL</button>
+        <button class="primary-button" id="shareEmailButton">RECEBER LINK E QR CODE</button>
         <button class="secondary-button" id="retakeButton">TIRAR OUTRA FOTO</button>
       </div>
     </section>
@@ -73,6 +73,7 @@
       <button type="button" class="dialog-close" id="closeDialogButton" aria-label="Fechar">×</button>
       <p class="eyebrow">RECEBA SUA FOTO</p>
       <h2>Preencha seus dados</h2>
+      <p class="dialog-intro">Após o cadastro, você receberá um QR Code e um link seguro para baixar a imagem imediatamente.</p>
 
       <label>
         Nome
@@ -91,12 +92,26 @@
 
       <label class="consent">
         <input type="checkbox" id="leadConsent" required />
-        <span>Autorizo o uso dos dados para o envio desta imagem.</span>
+        <span>Autorizo o cadastro dos dados e a disponibilização desta imagem.</span>
       </label>
 
-      <button class="primary-button" type="submit">ENVIAR POR E-MAIL</button>
+      <button class="primary-button" type="submit">GERAR LINK E QR CODE</button>
       <p class="form-status" id="formStatus" role="status"></p>
     </form>
+
+    <section class="delivery-result" id="deliveryResult" hidden>
+      <p class="eyebrow">IMAGEM DISPONÍVEL</p>
+      <h2>Baixe seu personagem</h2>
+      <p id="deliveryMessage"></p>
+      <img id="qrCodeImage" class="qr-code" alt="QR Code para baixar a imagem" />
+      <p class="expiration-message" id="expirationMessage"></p>
+      <div class="delivery-actions">
+        <a class="primary-button link-button" id="downloadLink" target="_blank" rel="noopener">ABRIR / BAIXAR IMAGEM</a>
+        <button class="secondary-button" id="copyLinkButton" type="button">COPIAR LINK</button>
+        <button class="secondary-button" id="nativeShareButton" type="button">COMPARTILHAR</button>
+        <button class="text-button" id="newRegistrationButton" type="button">CORRIGIR DADOS</button>
+      </div>
+    </section>
   </dialog>
 
   <script src="config.js"></script>

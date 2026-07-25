@@ -38,7 +38,7 @@
         <td>${escapeHtml(item.name || "")}</td>
         <td>${escapeHtml(item.phone || "")}</td>
         <td>${escapeHtml(item.email || "")}</td>
-        <td>${escapeHtml(item.emailStatus || "")}</td>
+        <td>QR Code / link</td>
       </tr>`).join("");
   }
 
@@ -48,7 +48,7 @@
 
   function exportCsv() {
     if (!records.length) return;
-    const data = [["data","nome","telefone","email","status_email","imagem"], ...records.map((r) => [r.createdAt,r.name,r.phone,r.email,r.emailStatus,r.imageUrl])];
+    const data = [["data","nome","telefone","email","tipo_entrega","imagem"], ...records.map((r) => [r.createdAt,r.name,r.phone,r.email,"QR Code / link",r.imageUrl])];
     const csv = data.map((row) => row.map((v) => `"${String(v || "").replaceAll('"','""')}"`).join(";")).join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a");

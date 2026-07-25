@@ -1,77 +1,62 @@
-# Avatar AI Game v4 — Vercel Functions automáticas
+# Avatar AI Game v5 — Vercel + QR Code
 
-Esta versão não usa Supabase Edge Functions. As três funções ficam na pasta `api/` e são publicadas automaticamente quando o projeto é enviado ao Vercel.
+Nesta versão, as funções são publicadas automaticamente pela Vercel e a entrega da imagem não depende de Resend, SMTP ou configuração de DNS.
 
-## O que continua no Supabase
+## Fluxo
 
-- Banco de dados dos leads.
-- Storage privado das fotos e avatares.
+1. O participante tira a foto.
+2. A Vercel Function envia a imagem para a OpenAI.
+3. A imagem gerada é armazenada no Supabase Storage.
+4. O participante preenche nome, telefone e e-mail para o cadastro do lead.
+5. O sistema cria um link seguro válido por 30 dias e um QR Code.
+6. O participante pode abrir, baixar, copiar o link ou compartilhar pelo recurso nativo do celular.
 
-## O que fica no Vercel
+> Importante: envio automático de e-mail sempre exige algum servidor/provedor de e-mail autenticado. Esta versão elimina essa dependência e entrega a imagem imediatamente por QR Code e link.
 
-- `/api/generate-avatar`: recebe a foto, chama a OpenAI e salva no Supabase.
-- `/api/share-avatar`: salva o lead e envia a imagem por e-mail.
-- `/api/admin-data`: alimenta o painel administrativo.
+## Estrutura
 
-## Publicação simplificada
+- `api/generate-avatar.js`: geração da imagem.
+- `api/share-avatar.js`: salva o lead e gera link assinado + QR Code.
+- `api/admin-data.js`: painel administrativo.
+- `supabase/setup.sql`: tabelas e bucket privado.
 
-1. Crie um repositório no GitHub e envie todos os arquivos desta pasta.
-2. Importe o repositório no Vercel.
-3. No Supabase, abra `SQL Editor` e execute o arquivo `supabase/setup.sql` uma única vez.
-4. No Vercel, abra `Settings → Environment Variables` e cadastre as variáveis listadas abaixo.
-5. Clique em `Redeploy`.
+## 1. Supabase
 
-Não existe etapa de publicar funções manualmente. O Vercel detecta a pasta `api` no deploy.
+Abra **SQL Editor**, cole o conteúdo de `supabase/setup.sql` e clique em **Run**.
 
-## Variáveis obrigatórias no Vercel
+## 2. Variáveis no Vercel
 
-- `OPENAI_API_KEY`
-- `SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `RESEND_API_KEY`
-- `EMAIL_FROM`
-- `ADMIN_PASSWORD`
+Em **Settings → Environment Variables**, cadastre:
 
-Variáveis opcionais:
+```text
+OPENAI_API_KEY
+SUPABASE_URL
+SUPABASE_SERVICE_ROLE_KEY
+ADMIN_PASSWORD
+```
 
-- `OPENAI_IMAGE_MODEL` — padrão: `gpt-image-2`
-- `OPENAI_IMAGE_QUALITY` — padrão: `medium`
+Opcionais:
 
-Depois de criar ou alterar uma variável, faça um novo deploy.
+```text
+OPENAI_IMAGE_MODEL=gpt-image-2
+OPENAI_IMAGE_QUALITY=medium
+```
 
-## Onde copiar as chaves do Supabase
+Não são mais necessárias:
 
-No projeto Supabase, abra `Project Settings → API`:
+```text
+RESEND_API_KEY
+EMAIL_FROM
+```
 
-- `Project URL` → `SUPABASE_URL`
-- `service_role` secret → `SUPABASE_SERVICE_ROLE_KEY`
+## 3. Publicação
 
-A `service_role` nunca deve ser colocada no `config.js` nem publicada diretamente no GitHub.
+Suba o conteúdo desta pasta para a raiz do repositório conectado à Vercel e faça um novo deploy. A pasta `api/` deve permanecer na raiz.
 
-## Banco e Storage
+## 4. Painel administrativo
 
-Execute o conteúdo de `supabase/setup.sql` no `SQL Editor` do Supabase. Ele cria:
+Acesse `/admin.html` e informe a senha configurada em `ADMIN_PASSWORD`.
 
-- tabela `avatar_generations`;
-- tabela `avatar_leads`;
-- bucket privado `avatar-images`;
-- regras de segurança.
+## Observação sobre e-mail
 
-## Painel administrativo
-
-Abra:
-
-`https://SEU-SITE.vercel.app/admin.html`
-
-Use a senha cadastrada em `ADMIN_PASSWORD`.
-
-## Imagens de identidade
-
-Coloque em `assets/`:
-
-- `start-background.jpg`
-- `result-background.jpg`
-
-## Observação sobre custos
-
-A OpenAI cobra por uso da API de imagem. Supabase, Vercel e Resend podem ter faixas gratuitas com limites próprios.
+Não existe envio automático de e-mail apenas com HTML/JavaScript do navegador. Para enviar e-mails sem abrir o aplicativo do participante, é obrigatório usar SMTP ou um serviço de e-mail transacional. O QR Code e o compartilhamento nativo são a alternativa sem cadastro de provedor e sem alteração de DNS.

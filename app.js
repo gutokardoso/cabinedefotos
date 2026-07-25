@@ -9,11 +9,18 @@
   const dialog = document.getElementById("leadDialog");
   const form = document.getElementById("leadForm");
   const formStatus = document.getElementById("formStatus");
+  const deliveryResult = document.getElementById("deliveryResult");
+  const qrCodeImage = document.getElementById("qrCodeImage");
+  const downloadLink = document.getElementById("downloadLink");
+  const copyLinkButton = document.getElementById("copyLinkButton");
+  const nativeShareButton = document.getElementById("nativeShareButton");
+  const newRegistrationButton = document.getElementById("newRegistrationButton");
 
   let stream = null;
   let facingMode = "user";
   let capturedImage = "";
   let generationId = "";
+  let currentDownloadUrl = "";
 
   function showScreen(id) {
     screens.forEach((screen) => screen.classList.toggle("active", screen.id === id));
@@ -27,15 +34,12 @@
     });
 
     const body = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      throw new Error(body.error || `Erro ${response.status} ao acessar o servidor.`);
-    }
+    if (!response.ok) throw new Error(body.error || `Erro ${response.status} ao acessar o servidor.`);
     return body;
   }
 
   async function startCamera() {
     stopCamera();
-
     if (!navigator.mediaDevices?.getUserMedia) {
       alert("Este navegador não oferece suporte à câmera.");
       return;
@@ -69,15 +73,12 @@
   function capturePhoto() {
     const width = video.videoWidth;
     const height = video.videoHeight;
-
     if (!width || !height) {
       alert("A câmera ainda não está pronta.");
       return;
     }
 
-    const maxWidth = 1024;
-    const maxHeight = 1536;
-    const scale = Math.min(maxWidth / width, maxHeight / height, 1);
+    const scale = Math.min(1024 / width, 1536 / height, 1);
     canvas.width = Math.round(width * scale);
     canvas.height = Math.round(height * scale);
     const ctx = canvas.getContext("2d");
@@ -95,7 +96,6 @@
 
   async function transformImage(imageData) {
     showScreen("processingScreen");
-
     try {
       if (config.demoMode) {
         await new Promise((resolve) => setTimeout(resolve, 1200));
@@ -105,10 +105,7 @@
         return;
       }
 
-      const payload = await callApi(config.generateEndpoint || "/api/generate-avatar", {
-        image: imageData
-      });
-
+      const payload = await callApi(config.generateEndpoint || "/api/generate-avatar", { image: imageData });
       if (!(payload.image || payload.imageUrl) || !payload.generationId) {
         throw new Error("O servidor não retornou a imagem completa.");
       }
@@ -124,18 +121,25 @@
     }
   }
 
+  function resetDeliveryDialog() {
+    form.reset();
+    form.hidden = false;
+    deliveryResult.hidden = true;
+    formStatus.textContent = "";
+    currentDownloadUrl = "";
+    qrCodeImage.removeAttribute("src");
+    downloadLink.removeAttribute("href");
+  }
+
   document.getElementById("startButton").addEventListener("click", async () => {
     showScreen("cameraScreen");
     await startCamera();
   });
-
   document.getElementById("captureButton").addEventListener("click", capturePhoto);
-
   document.getElementById("switchCameraButton").addEventListener("click", async () => {
     facingMode = facingMode === "user" ? "environment" : "user";
     await startCamera();
   });
-
   document.getElementById("retakeButton").addEventListener("click", async () => {
     generationId = "";
     capturedImage = "";
@@ -144,17 +148,12 @@
   });
 
   document.getElementById("shareEmailButton").addEventListener("click", () => {
-    if (!generationId) {
-      alert("Gere uma imagem antes de compartilhar.");
-      return;
-    }
-    form.reset();
-    formStatus.textContent = "";
+    if (!generationId) return void alert("Gere uma imagem antes de compartilhar.");
+    resetDeliveryDialog();
     dialog.showModal();
   });
 
   document.getElementById("closeDialogButton").addEventListener("click", () => dialog.close());
-
   document.querySelectorAll("[data-go]").forEach((button) => {
     button.addEventListener("click", () => {
       stopCamera();
@@ -166,7 +165,7 @@
     event.preventDefault();
     const submitButton = form.querySelector('button[type="submit"]');
     submitButton.disabled = true;
-    formStatus.textContent = "Salvando cadastro e enviando a imagem...";
+    formStatus.textContent = "Salvando cadastro e criando seu link seguro...";
 
     try {
       const payload = await callApi(config.shareEndpoint || "/api/share-avatar", {
@@ -177,8 +176,14 @@
         consent: document.getElementById("leadConsent").checked
       });
 
-      formStatus.textContent = payload.message || "Imagem enviada com sucesso!";
-      setTimeout(() => dialog.close(), 1600);
+      currentDownloadUrl = payload.downloadUrl;
+      qrCodeImage.src = payload.qrCode;
+      downloadLink.href = currentDownloadUrl;
+      form.hidden = true;
+      deliveryResult.hidden = false;
+      document.getElementById("deliveryMessage").textContent = payload.message;
+      document.getElementById("expirationMessage").textContent = `O link ficará disponível por ${payload.expiresInDays || 30} dias.`;
+      nativeShareButton.hidden = !navigator.share;
     } catch (error) {
       console.error(error);
       formStatus.textContent = error.message;
@@ -187,5 +192,28 @@
     }
   });
 
+  copyLinkButton.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(currentDownloadUrl);
+      copyLinkButton.textContent = "LINK COPIADO!";
+      setTimeout(() => (copyLinkButton.textContent = "COPIAR LINK"), 1800);
+    } catch {
+      window.prompt("Copie o link abaixo:", currentDownloadUrl);
+    }
+  });
+
+  nativeShareButton.addEventListener("click", async () => {
+    try {
+      await navigator.share({
+        title: "Meu personagem",
+        text: "Acesse e baixe meu personagem:",
+        url: currentDownloadUrl
+      });
+    } catch (error) {
+      if (error?.name !== "AbortError") console.error(error);
+    }
+  });
+
+  newRegistrationButton.addEventListener("click", resetDeliveryDialog);
   window.addEventListener("beforeunload", stopCamera);
 })();
