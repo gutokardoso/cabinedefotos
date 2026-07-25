@@ -76,3 +76,7 @@ A composição é feita com `sharp`, garantindo que o fundo e a identidade Taboo
 ## Correção da versão 8
 
 A geração não solicita mais fundo transparente à API. O personagem é produzido sobre chroma key verde e recortado automaticamente no servidor antes da composição final. Isso mantém compatibilidade com modelos que não aceitam `background: transparent`.
+
+
+## Versão 9
+A geração usa o novo endpoint `/api/generate-avatar-v9`, evitando qualquer função antiga em cache na Vercel. Nenhum parâmetro de fundo transparente é enviado à API.
