@@ -1,33 +1,32 @@
-# Avatar AI Game v6
+# Avatar AI Game v5 — Vercel + QR Code
 
-Versão otimizada para uso em totem de evento.
+Nesta versão, as funções são publicadas automaticamente pela Vercel e a entrega da imagem não depende de Resend, SMTP ou configuração de DNS.
 
-## Fluxo de entrega ao participante
+## Fluxo
 
-1. A foto é capturada e transformada.
-2. O participante informa nome, telefone e e-mail.
-3. O sistema salva o lead e cria um token seguro com validade de 30 dias.
-4. O QR Code abre `foto.html` no celular do participante.
-5. A página mobile mostra a imagem e oferece:
-   - **Salvar na galeria** via menu nativo do celular;
-   - **Compartilhar**;
-   - **Abrir imagem**;
-   - instruções para iPhone e Android.
+1. O participante tira a foto.
+2. A Vercel Function envia a imagem para a OpenAI.
+3. A imagem gerada é armazenada no Supabase Storage.
+4. O participante preenche nome, telefone e e-mail para o cadastro do lead.
+5. O sistema cria um link seguro válido por 30 dias e um QR Code.
+6. O participante pode abrir, baixar, copiar o link ou compartilhar pelo recurso nativo do celular.
 
-No iPhone, sites não podem salvar silenciosamente na galeria. O botão abre o menu nativo para o usuário escolher **Salvar Imagem**. Como alternativa, ele pode tocar e segurar a foto e selecionar **Salvar em Fotos**.
+> Importante: envio automático de e-mail sempre exige algum servidor/provedor de e-mail autenticado. Esta versão elimina essa dependência e entrega a imagem imediatamente por QR Code e link.
 
-## Publicação
+## Estrutura
 
-Suba todo o conteúdo desta pasta para a raiz do repositório conectado à Vercel.
+- `api/generate-avatar.js`: geração da imagem.
+- `api/share-avatar.js`: salva o lead e gera link assinado + QR Code.
+- `api/admin-data.js`: painel administrativo.
+- `supabase/setup.sql`: tabelas e bucket privado.
 
-A Vercel publicará automaticamente:
+## 1. Supabase
 
-- `/api/generate-avatar`
-- `/api/share-avatar`
-- `/api/photo-access`
-- `/api/admin-data`
+Abra **SQL Editor**, cole o conteúdo de `supabase/setup.sql` e clique em **Run**.
 
-## Variáveis da Vercel
+## 2. Variáveis no Vercel
+
+Em **Settings → Environment Variables**, cadastre:
 
 ```text
 OPENAI_API_KEY
@@ -43,16 +42,32 @@ OPENAI_IMAGE_MODEL=gpt-image-2
 OPENAI_IMAGE_QUALITY=medium
 ```
 
-## Atualização do Supabase
-
-Abra o **SQL Editor** do Supabase e execute todo o arquivo:
+Não são mais necessárias:
 
 ```text
-supabase/setup.sql
+RESEND_API_KEY
+EMAIL_FROM
 ```
 
-Ele cria as tabelas quando necessário e adiciona os campos `delivery_token` e `delivery_expires_at` usados pelos links seguros.
+## 3. Publicação
 
-## Depois de atualizar
+Suba o conteúdo desta pasta para a raiz do repositório conectado à Vercel e faça um novo deploy. A pasta `api/` deve permanecer na raiz.
 
-Faça um novo deploy na Vercel. Não é necessário configurar Resend, SMTP ou DNS para o fluxo por QR Code.
+## 4. Painel administrativo
+
+Acesse `/admin.html` e informe a senha configurada em `ADMIN_PASSWORD`.
+
+## Observação sobre e-mail
+
+Não existe envio automático de e-mail apenas com HTML/JavaScript do navegador. Para enviar e-mails sem abrir o aplicativo do participante, é obrigatório usar SMTP ou um serviço de e-mail transacional. O QR Code e o compartilhamento nativo são a alternativa sem cadastro de provedor e sem alteração de DNS.
+
+
+## Composição visual fixa da versão 7
+
+O servidor gera somente o personagem com fundo transparente e monta o resultado final em 1024 × 1536 px usando:
+
+- `assets/avatar-background.png`: fundo fixo atrás do personagem;
+- personagem 3D gerado pela OpenAI;
+- `assets/avatar-foreground.png`: moldura e assinatura aplicadas na frente.
+
+A composição é feita com `sharp`, garantindo que o fundo e a identidade Taboo Games sejam iguais em todas as imagens.

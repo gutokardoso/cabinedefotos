@@ -1,4 +1,6 @@
 import { Blob } from "node:buffer";
+import path from "node:path";
+import sharp from "sharp";
 import { getSupabaseAdmin, parseDataUrl, requirePost, sendJson } from "./_helpers.js";
 
 export const config = { api: { bodyParser: { sizeLimit: "4mb" } } };
@@ -22,7 +24,7 @@ export default async function handler(request, response) {
 
     generationId = crypto.randomUUID();
     const originalPath = `${generationId}/original.${original.extension}`;
-    const generatedPath = `${generationId}/avatar.jpg`;
+    const generatedPath = `${generationId}/avatar.png`;
 
     const { error: originalUploadError } = await supabase.storage
       .from("avatar-images")
@@ -41,13 +43,14 @@ export default async function handler(request, response) {
     form.append("image", new Blob([original.buffer], { type: original.mime }), `foto.${original.extension}`);
     form.append("size", "1024x1536");
     form.append("quality", process.env.OPENAI_IMAGE_QUALITY || "medium");
-    form.append("output_format", "jpeg");
+    form.append("output_format", "png");
+    form.append("background", "transparent");
     form.append("prompt", `
-Transforme a pessoa desta fotografia em um personagem original de animação 3D cinematográfica premium.
-Preserve com máxima fidelidade a identidade e os traços reconhecíveis: formato do rosto, olhos, nariz, boca, tom de pele, cabelo, penteado, expressão, roupas, cores, estampas, acessórios, pose e proporções corporais.
-Mantenha a mesma pessoa e a mesma roupa. Não altere idade aparente, gênero, etnia ou características físicas.
-Não copie personagens, franquias, estúdios ou marcas existentes. Não adicione textos, logotipos ou objetos ausentes na foto.
-Produza composição vertical, personagem centralizado, acabamento expressivo de longa-metragem 3D e fundo neutro discreto.
+Transforme exclusivamente a pessoa desta fotografia em um personagem original de longa-metragem de animação 3D cinematográfica, com visual encantador, polido e expressivo semelhante à referência fornecida pelo cliente: olhos levemente maiores e expressivos, formas faciais suaves, pele com acabamento 3D delicado, cabelo detalhado, iluminação cinematográfica suave e qualidade premium de filme animado.
+Preserve com máxima fidelidade a identidade e os traços reconhecíveis da pessoa: formato do rosto, olhos, nariz, boca, tom de pele, cabelo, penteado, expressão, roupas, cores, estampas, acessórios, pose e proporções corporais.
+Mantenha a mesma pessoa e a mesma roupa. Não altere idade aparente, gênero, etnia ou características físicas. Não transforme a pessoa em outra identidade.
+Gere somente o personagem recortado, centralizado, em retrato vertical e com fundo totalmente transparente. Não crie cenário, chão, moldura, texto, logotipo, assinatura, sombra retangular ou qualquer elemento de fundo.
+Mantenha espaço visual adequado ao redor da cabeça e enquadre o personagem do peito ou cintura para cima, sem cortar o topo do cabelo.
     `.trim());
 
     const aiResponse = await fetch("https://api.openai.com/v1/images/edits", {
@@ -63,11 +66,35 @@ Produza composição vertical, personagem centralizado, acabamento expressivo de
 
     const generatedBase64 = aiPayload?.data?.[0]?.b64_json;
     if (!generatedBase64) throw new Error("A API não retornou a imagem gerada.");
-    const generatedBuffer = Buffer.from(generatedBase64, "base64");
+    const characterBuffer = Buffer.from(generatedBase64, "base64");
+
+    const assetsDirectory = path.join(process.cwd(), "assets");
+    const backgroundPath = path.join(assetsDirectory, "avatar-background.png");
+    const foregroundPath = path.join(assetsDirectory, "avatar-foreground.png");
+
+    // A IA gera apenas o personagem transparente. O fundo e a moldura são
+    // aplicados pelo servidor para permanecerem idênticos em todas as fotos.
+    const preparedCharacter = await sharp(characterBuffer)
+      .resize(1024, 1536, {
+        fit: "contain",
+        position: "centre",
+        background: { r: 0, g: 0, b: 0, alpha: 0 }
+      })
+      .png()
+      .toBuffer();
+
+    const finalImageBuffer = await sharp(backgroundPath)
+      .resize(1024, 1536, { fit: "fill" })
+      .composite([
+        { input: preparedCharacter, left: 0, top: 0 },
+        { input: foregroundPath, left: 0, top: 0 }
+      ])
+      .png({ compressionLevel: 9 })
+      .toBuffer();
 
     const { error: generatedUploadError } = await supabase.storage
       .from("avatar-images")
-      .upload(generatedPath, generatedBuffer, { contentType: "image/jpeg", upsert: false });
+      .upload(generatedPath, finalImageBuffer, { contentType: "image/png", upsert: false });
     if (generatedUploadError) throw generatedUploadError;
 
     const { error: updateError } = await supabase
