@@ -29,7 +29,7 @@ create index if not exists avatar_leads_email_idx on public.avatar_leads(email);
 alter table public.avatar_generations enable row level security;
 alter table public.avatar_leads enable row level security;
 
--- Nenhuma policy pública é criada. Todas as operações passam pelas Edge Functions
+-- Nenhuma policy pública é criada. Todas as operações passam pelas Vercel Functions
 -- utilizando a service role, que nunca é exposta no navegador.
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)

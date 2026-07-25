@@ -13,14 +13,9 @@
     status.textContent = "Carregando cadastros...";
 
     try {
-      const base = String(cfg.supabaseUrl || "").replace(/\/$/, "");
-      const response = await fetch(`${base}/functions/v1/admin-data`, {
+      const response = await fetch(cfg.adminEndpoint || "/api/admin-data", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: cfg.supabaseAnonKey,
-          Authorization: `Bearer ${cfg.supabaseAnonKey}`
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password })
       });
       const payload = await response.json();

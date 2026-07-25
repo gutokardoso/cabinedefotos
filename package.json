@@ -1,12 +1,12 @@
 {
   "name": "avatar-ai-game",
-  "version": "2.0.0",
+  "version": "4.0.0",
   "private": true,
   "type": "module",
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
-    "openai": "^6.16.0"
+    "@supabase/supabase-js": "^2.57.4"
   }
 }
