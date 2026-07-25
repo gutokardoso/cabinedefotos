@@ -44,12 +44,11 @@ export default async function handler(request, response) {
     form.append("size", "1024x1536");
     form.append("quality", process.env.OPENAI_IMAGE_QUALITY || "medium");
     form.append("output_format", "png");
-    form.append("background", "transparent");
     form.append("prompt", `
 Transforme exclusivamente a pessoa desta fotografia em um personagem original de longa-metragem de animação 3D cinematográfica, com visual encantador, polido e expressivo semelhante à referência fornecida pelo cliente: olhos levemente maiores e expressivos, formas faciais suaves, pele com acabamento 3D delicado, cabelo detalhado, iluminação cinematográfica suave e qualidade premium de filme animado.
 Preserve com máxima fidelidade a identidade e os traços reconhecíveis da pessoa: formato do rosto, olhos, nariz, boca, tom de pele, cabelo, penteado, expressão, roupas, cores, estampas, acessórios, pose e proporções corporais.
 Mantenha a mesma pessoa e a mesma roupa. Não altere idade aparente, gênero, etnia ou características físicas. Não transforme a pessoa em outra identidade.
-Gere somente o personagem recortado, centralizado, em retrato vertical e com fundo totalmente transparente. Não crie cenário, chão, moldura, texto, logotipo, assinatura, sombra retangular ou qualquer elemento de fundo.
+Gere somente o personagem centralizado em retrato vertical sobre um fundo chroma key verde puro, plano e uniforme na cor exata #00FF00. O verde deve ocupar todo o fundo, sem gradiente, textura, cenário, chão, objetos ou sombras projetadas. Não use verde nas roupas, acessórios, olhos ou cabelo. Não crie moldura, texto, logotipo ou assinatura.
 Mantenha espaço visual adequado ao redor da cabeça e enquadre o personagem do peito ou cintura para cima, sem cortar o topo do cabelo.
     `.trim());
 
@@ -72,14 +71,47 @@ Mantenha espaço visual adequado ao redor da cabeça e enquadre o personagem do 
     const backgroundPath = path.join(assetsDirectory, "avatar-background.png");
     const foregroundPath = path.join(assetsDirectory, "avatar-foreground.png");
 
-    // A IA gera apenas o personagem transparente. O fundo e a moldura são
-    // aplicados pelo servidor para permanecerem idênticos em todas as fotos.
-    const preparedCharacter = await sharp(characterBuffer)
-      .resize(1024, 1536, {
-        fit: "contain",
-        position: "centre",
-        background: { r: 0, g: 0, b: 0, alpha: 0 }
-      })
+    // O modelo atual não aceita saída transparente. A IA produz o personagem
+    // sobre chroma key verde e o servidor converte esse verde em transparência.
+    const resizedCharacter = await sharp(characterBuffer)
+      .resize(1024, 1536, { fit: "fill" })
+      .removeAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+
+    const { data: rawPixels, info } = resizedCharacter;
+    const rgbaPixels = Buffer.alloc(info.width * info.height * 4);
+
+    for (let source = 0, target = 0; source < rawPixels.length; source += 3, target += 4) {
+      const red = rawPixels[source];
+      const green = rawPixels[source + 1];
+      const blue = rawPixels[source + 2];
+
+      // Remove verdes intensos e suaviza as bordas para evitar halo.
+      const greenDominance = green - Math.max(red, blue);
+      const greenStrength = green / 255;
+      let alpha = 255;
+
+      if (greenDominance > 80 && greenStrength > 0.55) {
+        alpha = 0;
+      } else if (greenDominance > 25 && greenStrength > 0.35) {
+        alpha = Math.max(0, Math.min(255, Math.round(255 * (80 - greenDominance) / 55)));
+      }
+
+      // Reduz contaminação verde nas bordas sem alterar áreas opacas.
+      const correctedGreen = alpha < 255
+        ? Math.min(green, Math.max(red, blue) + 18)
+        : green;
+
+      rgbaPixels[target] = red;
+      rgbaPixels[target + 1] = correctedGreen;
+      rgbaPixels[target + 2] = blue;
+      rgbaPixels[target + 3] = alpha;
+    }
+
+    const preparedCharacter = await sharp(rgbaPixels, {
+      raw: { width: info.width, height: info.height, channels: 4 }
+    })
       .png()
       .toBuffer();
 

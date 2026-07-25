@@ -64,10 +64,15 @@ Não existe envio automático de e-mail apenas com HTML/JavaScript do navegador.
 
 ## Composição visual fixa da versão 7
 
-O servidor gera somente o personagem com fundo transparente e monta o resultado final em 1024 × 1536 px usando:
+O servidor gera somente o personagem com fundo chroma key removido automaticamente e monta o resultado final em 1024 × 1536 px usando:
 
 - `assets/avatar-background.png`: fundo fixo atrás do personagem;
 - personagem 3D gerado pela OpenAI;
 - `assets/avatar-foreground.png`: moldura e assinatura aplicadas na frente.
 
 A composição é feita com `sharp`, garantindo que o fundo e a identidade Taboo Games sejam iguais em todas as imagens.
+
+
+## Correção da versão 8
+
+A geração não solicita mais fundo transparente à API. O personagem é produzido sobre chroma key verde e recortado automaticamente no servidor antes da composição final. Isso mantém compatibilidade com modelos que não aceitam `background: transparent`.
