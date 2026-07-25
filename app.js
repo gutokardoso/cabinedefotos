@@ -182,7 +182,7 @@
       form.hidden = true;
       deliveryResult.hidden = false;
       document.getElementById("deliveryMessage").textContent = payload.message;
-      document.getElementById("expirationMessage").textContent = `O link ficará disponível por ${payload.expiresInDays || 30} dias.`;
+      document.getElementById("expirationMessage").textContent = `A página da foto ficará disponível por ${payload.expiresInDays || 30} dias.`;
       nativeShareButton.hidden = !navigator.share;
     } catch (error) {
       console.error(error);
@@ -206,7 +206,7 @@
     try {
       await navigator.share({
         title: "Meu personagem",
-        text: "Acesse e baixe meu personagem:",
+        text: "Abra esta página para salvar meu personagem no celular:",
         url: currentDownloadUrl
       });
     } catch (error) {

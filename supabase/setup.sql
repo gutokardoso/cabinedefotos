@@ -44,3 +44,12 @@ on conflict (id) do update set
   public = excluded.public,
   file_size_limit = excluded.file_size_limit,
   allowed_mime_types = excluded.allowed_mime_types;
+
+-- Campos usados pela página mobile segura da versão 6.
+alter table public.avatar_leads
+  add column if not exists delivery_token text,
+  add column if not exists delivery_expires_at timestamptz;
+
+create unique index if not exists avatar_leads_delivery_token_idx
+  on public.avatar_leads(delivery_token)
+  where delivery_token is not null;
