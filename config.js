@@ -3,8 +3,8 @@ window.GAME_CONFIG = {
   resultBackground: "assets/result-background.jpg",
 
   // Dados públicos do projeto Supabase. Preencha após criar o projeto.
-  supabaseUrl: "https://SEU-PROJETO.supabase.co",
-  supabaseAnonKey: "SUA_CHAVE_PUBLICA_ANON",
+  supabaseUrl: "https://vghcgffxjyejhdsiwdwq.supabase.co",
+  supabaseAnonKey: "sb_publishable_UT9ZMWdbv0vJajJGqtxDDA_ARQ0wmka",
 
   generateFunction: "generate-avatar",
   shareFunction: "share-avatar",
