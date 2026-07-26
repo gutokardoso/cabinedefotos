@@ -386,18 +386,25 @@ input:focus { border-color: var(--accent); }
 }
 .start-artwork-button {
   position: absolute;
-  left: 39.25%;
-  top: 62.75%;
-  width: 21.5%;
-  height: 9.1%;
+  left: 50%;
+  top: 66.6%;
+  width: 20.4%;
+  height: auto;
   margin: 0;
   padding: 0;
   border: 0;
-  border-radius: 999px;
   background: transparent;
   cursor: pointer;
+  transform: translate(-50%, -50%);
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+}
+.start-artwork-button img {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 .start-artwork-button:focus-visible {
   outline: 4px solid rgba(255, 255, 255, .95);
