@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/generate-avatar.js": { "maxDuration": 300 },
+    "api/share-avatar.js": { "maxDuration": 60 },
+    "api/admin-data.js": { "maxDuration": 60 }
+  }
+}

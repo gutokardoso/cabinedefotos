@@ -1,0 +1,3 @@
+Adicione nesta pasta:
+- start-background.jpg
+- result-background.jpg

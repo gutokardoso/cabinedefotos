@@ -1,0 +1,10 @@
+project_id = "seu-project-ref"
+
+[functions.generate-avatar]
+verify_jwt = false
+
+[functions.share-avatar]
+verify_jwt = false
+
+[functions.admin-data]
+verify_jwt = false
