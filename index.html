@@ -9,14 +9,15 @@
 </head>
 <body>
   <main id="app">
-    <section class="screen active start-screen" id="startScreen" aria-labelledby="gameTitle">
-      <div class="start-overlay"></div>
-      <div class="start-content">
-        <div class="brand-placeholder">SUA MARCA</div>
-        <p class="eyebrow">EXPERIÊNCIA INTERATIVA</p>
-        <h1 id="gameTitle">Transforme-se em personagem</h1>
-        <p class="subtitle">Tire uma foto e descubra sua versão em animação 3D cinematográfica.</p>
-        <button class="primary-button" id="startButton">COMEÇAR</button>
+    <section class="screen active start-screen" id="startScreen" aria-label="Tela inicial da cabine de fotos">
+      <div class="start-artwork-wrap">
+        <img
+          class="start-artwork"
+          src="assets/tela-inicio.png"
+          alt="Cabine de fotos Taboo Games"
+          draggable="false"
+        />
+        <button class="start-button-hotspot" id="startButton" type="button" aria-label="Começar"></button>
       </div>
     </section>
 

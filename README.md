@@ -80,3 +80,9 @@ A geração não solicita mais fundo transparente à API. O personagem é produz
 
 ## Versão 9
 A geração usa o novo endpoint `/api/generate-avatar-v9`, evitando qualquer função antiga em cache na Vercel. Nenhum parâmetro de fundo transparente é enviado à API.
+
+## v10 — nova tela inicial
+
+- A arte `assets/tela-inicio.png` é exibida centralizada com `margin: 0 auto`.
+- O botão HTML invisível `#startButton` está posicionado sobre o botão “Começar” desenhado na arte.
+- A imagem mantém a proporção original e se adapta à tela sem distorção.
