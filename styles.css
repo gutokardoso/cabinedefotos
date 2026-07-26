@@ -175,7 +175,7 @@ h1 {
   right: 0;
   bottom: 0;
   display: grid;
-  grid-template-columns: 1fr 88px 1fr;
+  grid-template-columns: 1fr;
   align-items: center;
   gap: 18px;
   padding: 18px 20px max(20px, env(safe-area-inset-bottom));
@@ -308,7 +308,7 @@ input:focus { border-color: var(--accent); }
 
 @media (max-width: 640px) {
   .start-content { padding: 28px 20px; }
-  .camera-actions { grid-template-columns: 1fr 78px 1fr; gap: 10px; }
+  .camera-actions { grid-template-columns: 1fr; gap: 10px; }
   .capture-button { width: 72px; height: 72px; }
   .camera-actions .secondary-button { font-size: .65rem; }
   .result-actions { width: 100%; }
@@ -410,3 +410,5 @@ input:focus { border-color: var(--accent); }
   outline: 4px solid rgba(255, 255, 255, .95);
   outline-offset: 4px;
 }
+
+.camera-actions{display:flex;justify-content:center;align-items:center;}

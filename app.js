@@ -136,10 +136,6 @@
     await startCamera();
   });
   document.getElementById("captureButton").addEventListener("click", capturePhoto);
-  document.getElementById("switchCameraButton").addEventListener("click", async () => {
-    facingMode = facingMode === "user" ? "environment" : "user";
-    await startCamera();
-  });
   document.getElementById("retakeButton").addEventListener("click", async () => {
     generationId = "";
     capturedImage = "";
